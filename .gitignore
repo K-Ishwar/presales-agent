@@ -1,0 +1,28 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+*.egg-info/
+
+# Vector store (rebuilt from company docs)
+vector_store/
+
+# Test output files
+test_rfp_*.pdf
+test_proposal_*.pdf
+preview_proposal.html
+test_output.pdf
+
+# Node / React
+presales-frontend/node_modules/
+presales-frontend/build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
