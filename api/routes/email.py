@@ -5,9 +5,10 @@
 
 from fastapi import APIRouter, HTTPException
 from api.models import EmailRequest, EmailResponse
-import google.generativeai as genai
+from google import genai
 import os
 import json
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -34,7 +35,6 @@ async def draft_email(request: EmailRequest):
     a = request.analysis  # shorthand for cleaner code below
 
     # ── BUILD THE PROMPT ──────────────────────────────────────────────────────
-    # The more specific and detailed this prompt, the better the email
     met_count = len(a.can_meet)
     total_count = len(a.requirements_extracted)
     unmet_count = len(a.cannot_meet)
@@ -95,12 +95,32 @@ No explanation before or after. No markdown. Start with {{:
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not set in .env")
 
-        genai.configure(api_key=api_key)
-        # Using gemini-2.5-flash as requested
-        model = genai.GenerativeModel("gemini-2.5-flash")
-        
-        response = model.generate_content(prompt)
-        raw_response = response.text
+        client = genai.Client(api_key=api_key)
+
+        # Retry up to 3 times on 503 (server overload) with backoff
+        last_error = None
+        for attempt in range(1, 4):
+            try:
+                response = client.models.generate_content(
+                    model='gemini-3.1-flash-lite',
+                    contents=prompt,
+                    config=genai.types.GenerateContentConfig(
+                        temperature=0.2,
+                    ),
+                )
+                break  # success — exit retry loop
+            except Exception as e:
+                last_error = e
+                if "503" in str(e) or "UNAVAILABLE" in str(e):
+                    wait = attempt * 15  # 15s, 30s, 45s
+                    print(f"Gemini overloaded (attempt {attempt}/3), retrying in {wait}s...")
+                    time.sleep(wait)
+                else:
+                    raise  # non-503 error, re-raise immediately
+        else:
+            raise last_error or RuntimeError("All Gemini API retries exhausted")
+
+        raw_response = response.text or ""
         print(f"Gemini responded ({len(raw_response)} chars)")
 
     except Exception as e:
