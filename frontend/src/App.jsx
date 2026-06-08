@@ -5,6 +5,12 @@ import Spinner from "./components/Spinner";
 import AnalysisScreen from "./components/AnalysisScreen";
 import EmailModal from "./components/EmailModal";
 
+import {
+    uploadRFP,
+    generateEmail,
+    generateProposal
+} from "./api/presalesApi";
+
 function App() {
 
     const [loading, setLoading] = useState(false);
@@ -13,68 +19,143 @@ function App() {
 
     const [showModal, setShowModal] = useState(false);
 
-    const emailText = `Dear Client,
+    const [emailText, setEmailText] = useState("");
 
-Thank you for your interest in our services.
+    async function handleUpload(file) {
 
-Best Regards,
-Team`;
+        try {
 
-    async function handleUpload() {
+            setLoading(true);
 
-        setLoading(true);
-        
+            const formData = new FormData();
 
-        await new Promise((resolve) =>
-            setTimeout(resolve, 3000)
-        );
+            formData.append(
+                "file",
+                file
+            );
 
-        setAnalysis({
-            clientName: "ABC Corp",
-            industry: "Information Technology",
-            budget: "$100,000",
-            deadline: "45 Days"
-        });
+            const response =
+                await uploadRFP(
+                    formData
+                );
 
-        setLoading(false);
+            setAnalysis(
+                response.data
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Upload Error:",
+                error
+            );
+
+            alert(
+                "Failed to analyze RFP."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    }
+
+    async function handleDraftEmail() {
+
+        try {
+
+            setLoading(true);
+
+            const response =
+                await generateEmail(
+                    analysis,
+                    "Haripriya"
+                );
+
+            setEmailText(
+                response.data.body
+            );
+
+            setShowModal(true);
+
+        } catch (error) {
+
+            console.error(
+                "Email Error:",
+                error
+            );
+
+            alert(
+                "Failed to generate email."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    }
+
+    async function handleDownload() {
+
+        try {
+
+            const response =
+                await generateProposal(
+                    analysis,
+                    ""
+                );
+
+            const url =
+                window.URL.createObjectURL(
+                    response.data
+                );
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+            link.href = url;
+
+            link.download =
+                "proposal.pdf";
+
+            document.body.appendChild(
+                link
+            );
+
+            link.click();
+
+            link.remove();
+
+        } catch (error) {
+
+            console.error(
+                "PDF Error:",
+                error
+            );
+
+            alert(
+                "Failed to download PDF."
+            );
+
+        }
+
     }
 
     if (loading) {
-        return <Spinner />;
+
+        return (
+            <Spinner
+                message="Processing..."
+            />
+        );
+
     }
-
-    function handleDownload() {
-
-    alert("Downloading PDF...");
-    
-}
-
-// async function handleDownload() {
-
-//     const response =
-//     await axios.get(
-//         "/download-pdf",
-//         {
-//             responseType: "blob"
-//         }
-//     );
-
-//     const url =
-//     window.URL.createObjectURL(
-//         response.data
-//     );
-
-//     const link =
-//     document.createElement("a");
-
-//     link.href = url;
-
-//     link.download =
-//     "report.pdf";
-
-//     link.click();
-// }
-
 
     return (
 
@@ -84,24 +165,34 @@ Team`;
                 !analysis
                 ?
                 <UploadScreen
-                    onUpload={handleUpload}
+                    onUpload={
+                        handleUpload
+                    }
                 />
                 :
                 <AnalysisScreen
-                    analysis={analysis}
-                    onDraftEmail={() =>
-                        setShowModal(true)
+                    analysis={
+                        analysis
                     }
-                    onDownload={handleDownload}
+                    onDraftEmail={
+                        handleDraftEmail
+                    }
+                    onDownload={
+                        handleDownload
+                    }
                 />
             }
 
             {
                 showModal &&
                 <EmailModal
-                    emailText={emailText}
+                    emailText={
+                        emailText
+                    }
                     onClose={() =>
-                        setShowModal(false)
+                        setShowModal(
+                            false
+                        )
                     }
                 />
             }
@@ -109,6 +200,7 @@ Team`;
         </>
 
     );
+
 }
 
 export default App;

@@ -37,9 +37,20 @@ function UploadScreen({ onUpload }) {
 
                     e.preventDefault();
 
-                    setFile(
-                        e.dataTransfer.files[0]
-                    );
+                    const droppedFile =
+                        e.dataTransfer.files[0];
+
+                    if (
+                        droppedFile &&
+                        droppedFile.type ===
+                        "application/pdf"
+                    ) {
+                        setFile(droppedFile);
+                    } else {
+                        alert(
+                            "Please upload a PDF file."
+                        );
+                    }
 
                 }}
             >
@@ -49,7 +60,7 @@ function UploadScreen({ onUpload }) {
                 </h2>
 
                 <p className="text-gray-500 text-2xl mb-6">
-                    Formats: PNG, JPG, PDF, DOCX
+                    Format: PDF
                 </p>
 
                 <p className="font-bold text-xl mb-6">
@@ -82,6 +93,7 @@ function UploadScreen({ onUpload }) {
 
                 <input
                     type="file"
+                    accept=".pdf"
                     ref={inputRef}
                     className="hidden"
                     onChange={(e) =>

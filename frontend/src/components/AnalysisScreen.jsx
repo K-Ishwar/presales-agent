@@ -4,26 +4,6 @@ function AnalysisScreen({
     onDownload
 }) {
 
-    const compatibilityScore = 92;
-
-    const metRequirements = [
-        "React",
-        "FastAPI",
-        "AWS",
-        "Tailwind CSS"
-    ];
-
-    const unmetRequirements = [
-        "Azure",
-        "Kubernetes"
-    ];
-
-    const pricing = {
-        base: "$5,000",
-        addons: "$2,000",
-        total: "$7,000"
-    };
-
     return (
 
         <div
@@ -89,49 +69,118 @@ function AnalysisScreen({
                         mt-2
                         "
                     >
-                        {compatibilityScore}%
+                        {analysis.compatibility_score}%
                     </p>
 
                 </div>
 
-                {/* Client Details */}
+                {/* Client Information */}
 
                 <div
                     className="
-                    grid
-                    grid-cols-2
-                    gap-4
+                    bg-gray-50
+                    rounded-2xl
+                    p-6
                     mb-8
                     "
                 >
 
-                    <div>
+                    <h3
+                        className="
+                        text-2xl
+                        font-semibold
+                        mb-4
+                        "
+                    >
+                        Client Information
+                    </h3>
+
+                    <p className="mb-2">
                         <strong>Client Name:</strong>
                         {" "}
-                        {analysis.clientName}
-                    </div>
+                        {analysis.client_name}
+                    </p>
 
-                    <div>
-                        <strong>Industry:</strong>
+                    <p>
+                        <strong>Recommended Tier:</strong>
                         {" "}
-                        {analysis.industry}
-                    </div>
-
-                    <div>
-                        <strong>Budget:</strong>
-                        {" "}
-                        {analysis.budget}
-                    </div>
-
-                    <div>
-                        <strong>Deadline:</strong>
-                        {" "}
-                        {analysis.deadline}
-                    </div>
+                        {analysis.recommended_tier}
+                    </p>
 
                 </div>
 
-                {/* Requirements */}
+                {/* Summary */}
+
+                <div
+                    className="
+                    bg-blue-50
+                    rounded-2xl
+                    p-6
+                    mb-8
+                    "
+                >
+
+                    <h3
+                        className="
+                        text-2xl
+                        font-semibold
+                        mb-4
+                        "
+                    >
+                        Executive Summary
+                    </h3>
+
+                    <p>
+                        {analysis.summary}
+                    </p>
+
+                </div>
+
+                {/* Requirements Extracted */}
+
+                <div
+                    className="
+                    bg-white
+                    border
+                    rounded-2xl
+                    p-6
+                    mb-8
+                    "
+                >
+
+                    <h3
+                        className="
+                        text-2xl
+                        font-semibold
+                        mb-4
+                        "
+                    >
+                        Requirements Extracted
+                    </h3>
+
+                    <ul
+                        className="
+                        list-disc
+                        pl-6
+                        space-y-2
+                        "
+                    >
+
+                        {
+                            analysis.requirements_extracted.map(
+                                (item) => (
+                                    <li key={item}>
+                                        {item}
+                                    </li>
+                                )
+                            )
+                        }
+
+                    </ul>
+
+                </div>
+
+                {/* Can Meet / Cannot Meet */}
 
                 <div
                     className="
@@ -152,7 +201,7 @@ function AnalysisScreen({
                             mb-4
                             "
                         >
-                            Met Requirements
+                            Can Meet
                         </h3>
 
                         <div
@@ -164,7 +213,7 @@ function AnalysisScreen({
                         >
 
                             {
-                                metRequirements.map(
+                                analysis.can_meet.map(
                                     (item) => (
                                         <span
                                             key={item}
@@ -197,7 +246,7 @@ function AnalysisScreen({
                             mb-4
                             "
                         >
-                            Unmet Requirements
+                            Cannot Meet
                         </h3>
 
                         <div
@@ -209,7 +258,7 @@ function AnalysisScreen({
                         >
 
                             {
-                                unmetRequirements.map(
+                                analysis.cannot_meet.map(
                                     (item) => (
                                         <span
                                             key={item}
@@ -266,36 +315,43 @@ function AnalysisScreen({
 
                             <tr>
                                 <td className="py-2">
-                                    Base Package
+                                    Base Price
                                 </td>
 
                                 <td className="py-2">
-                                    {pricing.base}
+                                    ${analysis.base_price}
                                 </td>
                             </tr>
 
-                            <tr>
-                                <td className="py-2">
-                                    Addons
-                                </td>
+                            {
+                                analysis.addons.map(
+                                    (addon) => (
+                                        <tr key={addon.name}>
+                                            <td className="py-2">
+                                                {addon.name}
+                                            </td>
 
-                                <td className="py-2">
-                                    {pricing.addons}
-                                </td>
-                            </tr>
+                                            <td className="py-2">
+                                                ${addon.price}
+                                            </td>
+                                        </tr>
+                                    )
+                                )
+                            }
 
                             <tr
                                 className="
                                 font-bold
                                 text-lg
+                                border-t
                                 "
                             >
                                 <td className="py-2">
-                                    Total
+                                    Total Monthly Price
                                 </td>
 
                                 <td className="py-2">
-                                    {pricing.total}
+                                    ${analysis.total_monthly_price}
                                 </td>
                             </tr>
 
