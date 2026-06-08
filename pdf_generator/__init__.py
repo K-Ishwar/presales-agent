@@ -1,1 +1,1 @@
-from .generator import generate_pdf
+from .generator import generate_pdf, generate_proposal_pdf

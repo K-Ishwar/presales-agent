@@ -14,7 +14,7 @@ def test_health():
     assert r.status_code == 200, f"Expected 200, got {r.status_code}"
     data = r.json()
     assert data["status"] == "ok"
-    print(f"✅ Health check: {data['message']}")
+    print(f"[PASS] Health check: {data['message']}")
 
 
 def test_upload_valid_pdf():
@@ -22,7 +22,7 @@ def test_upload_valid_pdf():
     pdf_path = "test_rfp_simple.pdf"
 
     if not os.path.exists(pdf_path):
-        print(f"⚠️  {pdf_path} not found — run create_test_rfp.py first")
+        print(f"[WARN] {pdf_path} not found — run create_test_rfp.py first")
         return
 
     with open(pdf_path, "rb") as f:
@@ -46,7 +46,7 @@ def test_upload_valid_pdf():
     assert 0 <= data["compatibility_score"] <= 100
     assert data["total_monthly_price"] > 0
 
-    print(f"✅ Upload RFP:")
+    print(f"[PASS] Upload RFP:")
     print(f"   Client: {data['client_name']}")
     print(f"   Tier: {data['recommended_tier']}")
     print(f"   Price: ${data['total_monthly_price']:,.0f}/month")
@@ -61,7 +61,7 @@ def test_upload_wrong_file_type():
         files={"file": ("image.jpg", b"fake image content", "image/jpeg")}
     )
     assert r.status_code == 400, f"Expected 400, got {r.status_code}"
-    print(f"✅ Wrong file type correctly rejected: {r.json()['detail']}")
+    print(f"[PASS] Wrong file type correctly rejected: {r.json()['detail']}")
 
 
 def test_upload_empty_file():
@@ -71,7 +71,7 @@ def test_upload_empty_file():
         files={"file": ("empty.pdf", b"", "application/pdf")}
     )
     assert r.status_code == 400, f"Expected 400, got {r.status_code}"
-    print(f"✅ Empty file correctly rejected: {r.json()['detail']}")
+    print(f"[PASS] Empty file correctly rejected: {r.json()['detail']}")
 
 
 
@@ -93,7 +93,7 @@ def test_generate_proposal(analysis: dict):
     with open("test_output_proposal.pdf", "wb") as f:
         f.write(r.content)
 
-    print(f"✅ Generate proposal:")
+    print(f"[PASS] Generate proposal:")
     print(f"   PDF size: {len(r.content):,} bytes")
     print(f"   Saved to: test_output_proposal.pdf")
     print(f"   Open this file to verify it looks correct")
@@ -117,7 +117,7 @@ def test_draft_email(analysis: dict):
     assert client_name.split()[0].lower() in data["body"].lower(), \
         f"Email should mention client name '{client_name}'"
 
-    print(f"✅ Draft email:")
+    print(f"[PASS] Draft email:")
     print(f"   Subject: {data['subject']}")
     print(f"   Body preview: {data['body'][:100]}...")
     return data
@@ -136,7 +136,7 @@ if __name__ == "__main__":
             test_generate_proposal(analysis)
             test_draft_email(analysis)
             
-        print("\n🎉 All tests passed!")
+        print("\n[SUCCESS] All tests passed!")
     except requests.exceptions.ConnectionError:
-        print("❌ Cannot connect to backend.")
+        print("[FAIL] Cannot connect to backend.")
         print("   Start it first: python run.py")

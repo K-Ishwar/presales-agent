@@ -139,6 +139,23 @@ Use exactly this structure:
 
     # ── STEP 4: PARSE THE RESPONSE ────────────────────────────────────────────
     result = parse_llm_response(raw_response)
+
+    # ── STEP 5: CALCULATE PRICING VIA PRICING ENGINE ─────────────────────────
+    # We use the rule-based pricing engine to ensure pricing is deterministic,
+    # compliant with business rules, and never $0.
+    try:
+        from api.pricing import calculate_price
+        reqs = result.get("requirements_extracted", [])
+        pricing_result = calculate_price(reqs)
+        
+        result["recommended_tier"] = pricing_result["tier"]
+        result["base_price"] = pricing_result["base_price"]
+        result["addons"] = pricing_result["addons"]
+        result["total_monthly_price"] = pricing_result["total"]
+        print(f"Pricing calculated via engine: {pricing_result['tier']} - Total: ${pricing_result['total']:,.0f}")
+    except Exception as pricing_err:
+        print(f"Warning: Rule-based pricing calculation failed ({pricing_err}). Keeping LLM pricing.")
+
     return result
 
 
